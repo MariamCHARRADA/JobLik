@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "react-native-reanimated-carousel": "^3.5.1",
+    "react-native-snap-carousel": "^3.9.1"
+  }
+}
