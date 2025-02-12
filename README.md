@@ -59,24 +59,28 @@ Ready to dive in? Follow these simple steps:
    git clone https://github.com/MariamCHARRADA/JobLik.git
 
 2. Enter the JobLik Zone:
-  ```bash
-  cd JobLik
+    ```bash
+   cd JobLik
 
 3. Install Dependencies:
-  ```bash
-  npm install
+   ```bash
+    npm install
 
 4. Set Up Environment Variables:
+
  -> Create a .env file in the root directory.
+
  -> Add your MongoDB connection string and other necessary variables:
 
-```bash
-MONGO_URI=mongodb://localhost:27017/joblik
-JWT_SECRET=your_jwt_secret
+   .env :
+
+    MONGO_URI=mongodb://localhost:27017/joblik
+    JWT_SECRET=your_jwt_secret
 
 5. Start the App:
-  ```bash
-  npm start
+
+   ```bash
+    npm start
 
 Voila! JobLik is up and running. 🚀
 
@@ -84,22 +88,35 @@ Voila! JobLik is up and running. 🚀
 For Clients and Service Providers alike, start by creating your account and logging in:
 
 <br> <p align="center"> <img src="https://via.placeholder.com/200" width="200" /> <img src="https://via.placeholder.com/200" width="200" /> <img src="https://via.placeholder.com/200" width="200" /> <img src="https://via.placeholder.com/200" width="200" /> </p><br>
+
 For Clients 💁🏻‍♀️:
+
 Discover, book, and manage jobs with ease!
 
 <p align="center"> <img src="https://via.placeholder.com/200" width="200" /> <img src="https://via.placeholder.com/200" width="200" /> <img src="https://via.placeholder.com/200" width="200" /> <img src="https://via.placeholder.com/200" width="200" /> </p>
+
+
 For Service Providers 👷‍♂️:
+
 Manage your profile, update availability, and accept job requests!
 
 <p align="center"> <img src="https://via.placeholder.com/200" width="200" /> <img src="https://via.placeholder.com/200" width="200" /> <img src="https://via.placeholder.com/200" width="200" /> </p>
+
+
 ## Architecture 💼
-<p align="center"> <img src="https://github.com/MariamCHARRADA/BeautyBooking/blob/main/Architecture%20Diagram.png?raw=true" width="400"> </p>
+<p align="center"> <img src="https://github.com/MariamCHARRADA/JobLik/blob/main/Architecture%20Diagram.png?raw=true" width="400"> 
+</p>
+
 Here's how these components work together:
 
 Users interact with the frontend to request or offer services.
+
 The frontend sends these requests to the backend via APIs.
+
 The backend processes the requests, interacts with the database, and performs necessary operations.
+
 Responses from the backend are sent back to the frontend to inform the user of the outcome.
+
 This architecture ensures a separation of concerns, with the frontend focused on user interaction and the backend on data management and business logic.
 
 ## License 📄
