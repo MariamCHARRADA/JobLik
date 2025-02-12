@@ -68,14 +68,14 @@ Ready to dive in? Follow these simple steps:
 
 4. Set Up Environment Variables:
 
- -> Create a .env file in the root directory.
-
- -> Add your MongoDB connection string and other necessary variables:
-
-   .env :
-
-    MONGO_URI=mongodb://localhost:27017/joblik
-    JWT_SECRET=your_jwt_secret
+   -> Create a .env file in the root directory.
+  
+   -> Add your MongoDB connection string and other necessary variables:
+  
+     .env :
+  
+      MONGO_URI=mongodb://localhost:27017/joblik
+      JWT_SECRET=your_jwt_secret
 
 5. Start the App:
 
