@@ -14,10 +14,10 @@ const router = express.Router();
 
 router.get("/getReservations", getReservations);
 router.get("/client", protect, getClientReservations);
-router.get("/updateStatus", protect, updateReservationStatus);
+router.put("/:reservationId/status", protect, updateReservationStatus); 
 router.get("/serviceProvider", protect, getServiceProviderReservations);
 router.post("/createReservation", createReservation);
-router.delete("/deleteReservation/:id", deleteReservation);
+router.delete("/:id", protect, deleteReservation);
 router.get("/:ServiceProvider/availability", getAvailabilityForServiceProvider);
 
 module.exports = router;
