@@ -107,7 +107,7 @@ const getServiceProposalsByCategory = asyncHandler(async (req, res) => {
     })
       .sort({ createdAt: -1 })
       .populate("service")
-      .populate("provider", "firstName lastName email");
+      .populate("provider", "firstName lastName email averageRating");
 
     res.status(200).json(serviceProposals);
   } catch (error) {
