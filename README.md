@@ -126,4 +126,4 @@ JobLik is made available under the MIT License.
 Even though this is a personal project, I'm always open to new ideas! If you have suggestions to enhance the app, feel free to fork the repository and send me your contributions through pull requests. 💖
 
 ## Contact Me 📞
-[@MariamCHARRADA](https://github.com/MariamCHARRADA)]
+[@MariamCHARRADA](https://github.com/MariamCHARRADA)
