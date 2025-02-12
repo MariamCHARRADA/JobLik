@@ -59,14 +59,12 @@ Ready to dive in? Follow these simple steps:
    git clone https://github.com/MariamCHARRADA/JobLik.git
 
 2. Enter the JobLik Zone:
-
-```bash
-cd JobLik
+  ```bash
+  cd JobLik
 
 3. Install Dependencies:
-
-```bash
-npm install
+  ```bash
+  npm install
 
 4. Set Up Environment Variables:
  -> Create a .env file in the root directory.
@@ -77,9 +75,8 @@ MONGO_URI=mongodb://localhost:27017/joblik
 JWT_SECRET=your_jwt_secret
 
 5. Start the App:
-
-```bash
-npm start
+  ```bash
+  npm start
 
 Voila! JobLik is up and running. 🚀
 
