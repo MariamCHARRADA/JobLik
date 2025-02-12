@@ -178,7 +178,7 @@ const getReservations = asyncHandler(async (req, res) => {
     })
     .populate({
       path: "Client",
-      select: "email firstName lastName city phone address", // Include city, phone, and address
+      select: "email firstName lastName city phone address Photo",
       populate: {
         path: "city", // Populate the city field
         select: "Name", // Select only the name field from the City model
@@ -186,7 +186,7 @@ const getReservations = asyncHandler(async (req, res) => {
     })
     .populate({
       path: "ServiceProvider",
-      select: "firstName lastName email",
+      select: "firstName lastName email Photo",
     });
 
   res.status(200).json(reservations);
@@ -210,13 +210,13 @@ const getClientReservations = asyncHandler(async (req, res) => {
       })
       .populate({
         path: "Client",
-        select: "email firstName lastName city phone address", 
+        select: "email firstName lastName city phone address Photo", 
         populate: {
           path: "city",
           select: "Name",
         },
       })
-      .populate("ServiceProvider", "firstName lastName email");
+      .populate("ServiceProvider", "firstName lastName email Photo");
 
     res.status(200).json(clientReservations);
   } catch (e) {
@@ -245,13 +245,13 @@ const getServiceProviderReservations = asyncHandler(async (req, res) => {
       })
       .populate({
         path: "Client",
-        select: "email firstName lastName city phone address",
+        select: "email firstName lastName city phone address Photo",
         populate: {
           path: "city", // Populate the city field
           select: "Name", 
         },
       })
-      .populate("ServiceProvider", "firstName lastName email");
+      .populate("ServiceProvider", "firstName lastName email Photo");
 
     res.status(200).json(serviceProviderReservations);
   } catch (e) {

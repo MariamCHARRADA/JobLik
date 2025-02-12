@@ -50,7 +50,8 @@ const userSchema = mongoose.Schema(
       required: [true, "Please add role"],
     },
     city: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId, // Change to ObjectId
+      ref: "City", // Reference the City model
       required: [true, "Please enter your city"],
     },
     phone: {

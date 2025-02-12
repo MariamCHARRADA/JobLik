@@ -92,7 +92,6 @@ const loginUser = asyncHandler(async (req, res) => {
     const accessToken = jwt.sign(
       {
         user: {
-          username: user.username,
           email: user.email,
           id: user.id,
         },
@@ -131,12 +130,10 @@ const updateUser = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("User not found");
   }
-  const { firstName, lastName, phone, city, email, address } = req.body;
 
-  let imageUrl = user.Photo;
-  if (req.file) {
-    imageUrl = req.file.path;
-  }
+  const { firstName, lastName, phone, email, address } = req.body;
+
+  // Check if the email is already in use by another user
   if (
     email &&
     (await User.findOne({ email: email, _id: { $ne: req.params.id } }))
@@ -145,16 +142,15 @@ const updateUser = asyncHandler(async (req, res) => {
     throw new Error("Email already in use");
   }
 
+  // Update user fields
   const updatedUser = await User.findByIdAndUpdate(
     req.params.id,
     {
       firstName: firstName || user.firstName,
-      phone: phone || user.phone,
-      city: city || user.city,
       lastName: lastName || user.lastName,
+      phone: phone || user.phone,
       email: email || user.email,
       address: address || user.address,
-      Photo: imageUrl,
     },
     { new: true }
   );
@@ -183,7 +179,21 @@ const addCommentAndRating = asyncHandler(async (req, res) => {
     throw new Error("Service provider not found");
   }
 
-  const newComment = { clientId };
+  // Fetch the client details
+  const client = await User.findById(clientId);
+  if (!client) {
+    res.status(404);
+    throw new Error("Client not found");
+  }
+
+  const newComment = {
+    clientId: {
+      _id: client._id,
+      firstName: client.firstName,
+      lastName: client.lastName,
+      Photo: client.Photo,
+    },
+  };
   if (comment) newComment.comment = comment;
   if (rating) newComment.rating = rating;
 
@@ -192,28 +202,27 @@ const addCommentAndRating = asyncHandler(async (req, res) => {
   // Recalculate average rating if a rating is provided
   if (rating) {
     const totalRatings = serviceProvider.comments.reduce(
-      (sum, c) => sum + (c.rating || 0), // Ignore null ratings
+      (sum, c) => sum + (c.rating || 0),
       0
     );
     const numberOfRatings = serviceProvider.comments.filter(
       (c) => c.rating
-    ).length; // Count only non-null ratings
+    ).length;
     serviceProvider.averageRating = totalRatings / numberOfRatings;
   }
 
   await serviceProvider.save();
   res.status(201).json({ message: "Comment and/or rating added successfully" });
 });
+
 const getCommentsAndRatings = asyncHandler(async (req, res) => {
   try {
     const { serviceProviderId } = req.params;
-    console.log(serviceProviderId, "test");
 
     const serviceProvider = await User.findById(serviceProviderId).populate({
-      path: "comments.clientId", // Populate the clientId field in the comments
-      select: "firstName lastName", // Only return firstName and lastName
+      path: "comments.clientId",
+      select: "firstName lastName Photo", // Include Photo
     });
-    console.log(serviceProvider, "test");
 
     if (!serviceProvider || serviceProvider.role !== "serviceProvider") {
       res.status(404);
@@ -222,10 +231,7 @@ const getCommentsAndRatings = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       comments: serviceProvider.comments.map((comment) => ({
-        clientName: comment.clientId
-          ? `${comment.clientId.firstName} ${comment.clientId.lastName}`
-          : "Anonymous",
-        clientEmail: comment.clientId ? comment.clientId.email : null,
+        clientId: comment.clientId, // Return the full clientId object
         comment: comment.comment || null,
         rating: comment.rating || null,
         createdAt: comment.createdAt,
@@ -246,12 +252,14 @@ const getServiceProviders = asyncHandler(async (req, res) => {
       role: "serviceProvider",
     }).populate({
       path: "comments.clientId",
-      select: "firstName lastName",
+      select: "firstName lastName Photo", // Include Photo
     });
+
     if (!serviceProviders || serviceProviders.length === 0) {
       res.status(404);
       throw new Error("No service providers found");
     }
+
     res.status(200).json(serviceProviders);
   } catch (error) {
     res.status(500).json({ message: error.message });
