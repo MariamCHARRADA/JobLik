@@ -73,7 +73,6 @@ const BookingScreen = ({ route, navigation }) => {
       const response = await axios.get(
         `${BaseUrl}/api/users/${provider._id}/profile`
       );
-      console.log("Fetched comments:", response.data.comments); // Debugging
       setComments(response.data.comments || []);
     } catch (error) {
       console.error("Error fetching comments:", error);
@@ -83,6 +82,7 @@ const BookingScreen = ({ route, navigation }) => {
   const onDaySelect = async (day) => {
     const dateString = moment(day.dateString).format("YYYY-MM-DD");
     setSelectedDate(dateString);
+    setSelectedTime(null); // Reset selected time when a new day is selected
 
     try {
       const response = await axios.get(
@@ -91,6 +91,8 @@ const BookingScreen = ({ route, navigation }) => {
           params: { date: dateString },
         }
       );
+      console.log("Available Times:", response.data.slots); // Debugging
+
       const slots = response.data.slots;
       if (slots && slots.length > 0) {
         setAvailableTimes(slots);
@@ -107,7 +109,18 @@ const BookingScreen = ({ route, navigation }) => {
     setSelectedTime(time);
   };
 
+  const handleProfilePress = async () => {
+    navigation.navigate("ProviderDetailsScreen", {
+      provider: provider
+    });
+  };
+
   const createReservation = async () => {
+    // Check if the user is trying to book their own service
+    if (userData._id === provider._id) {
+      Alert.alert("Sorry,", "You cannot book your own service.");
+      return;
+    }
     try {
       const response = await axios.post(
         `${BaseUrl}/api/reservations/createReservation`,
@@ -143,6 +156,13 @@ const BookingScreen = ({ route, navigation }) => {
         ]
       );
     } catch (error) {
+      console.log("Payload:", {
+        Date: selectedDate,
+        Time: selectedTime,
+        ServiceProposal: serviceProposal._id,
+        ServiceProvider: provider._id,
+        Client: userData._id,
+      });
       Alert.alert(
         "Oops! 😅",
         "This slot is already booked! Please pick another one."
@@ -220,19 +240,26 @@ const BookingScreen = ({ route, navigation }) => {
         </TouchableOpacity>
         {/* Provider Details */}
         <View style={styles.providerRow}>
-          <Image
-            source={
-              provider?.Photo
-                ? { uri: `${BaseUrl}/` + provider.Photo }
-                : require("../../assets/avatar.png")
-            }
-            style={styles.providerImage}
-          />
+          <TouchableOpacity onPress={handleProfilePress}>
+            <Image
+              source={
+                provider?.Photo
+                  ? { uri: `${BaseUrl}/` + provider.Photo }
+                  : require("../../assets/avatar.png")
+              }
+              style={styles.providerImage}
+            />
+          </TouchableOpacity>
+
           <View style={styles.providerDetails}>
+          <TouchableOpacity onPress={handleProfilePress}>
+
             <Text style={styles.providerName}>
               {provider.firstName} {provider.lastName}
             </Text>
+            </TouchableOpacity>
             <Text style={styles.providerInfo}>📞 {provider.phone}</Text>
+            <Text style={styles.providerInfo}>📍 {provider?.address}</Text>
             <View style={styles.ratingContainer}>
               <Ionicons name="star" size={16} color="#FFD700" />
               <Text style={styles.ratingText}>
@@ -245,6 +272,7 @@ const BookingScreen = ({ route, navigation }) => {
         {/* Price and Description */}
         <View style={styles.priceDescriptionContainer}>
           <Text style={styles.price}>{serviceProposal.price} TND</Text>
+          <Text style={styles.title}>{serviceProposal.title}</Text>
           <Text style={styles.description}>{serviceProposal.description}</Text>
         </View>
 
@@ -442,11 +470,19 @@ const styles = StyleSheet.create({
     textAlign: "right",
     marginRight: 10,
   },
+  title: {
+    position: "absolute",
+    top: 13,
+    left: 25,
+    fontSize: 18,
+    fontWeight: "bold",
+  },
   description: {
     fontSize: 14,
     color: colors.BLACK,
     textAlign: "left",
     marginLeft: 10,
+    marginTop: 10,
   },
   calendarContainer: {
     borderRadius: 15,
@@ -533,7 +569,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.WHITE,
     borderRadius: 10,
     padding: 10,
-    marginBottom: 10,
+    marginBottom: 9,
     elevation: 1,
     marginHorizontal: 2,
   },
@@ -542,6 +578,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 50,
     marginRight: 10,
+    marginTop: 5,
   },
   commentContent: {
     flex: 1,
@@ -558,8 +595,9 @@ const styles = StyleSheet.create({
   },
   noComments: {
     fontSize: 14,
-    color: colors.DARK,
+    color: colors.BLACK,
     textAlign: "center",
+    marginBottom: 10,
   },
   addCommentSection: {
     marginTop: 10,

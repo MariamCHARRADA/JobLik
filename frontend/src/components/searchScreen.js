@@ -42,7 +42,7 @@ const ServiceSearchScreen = () => {
   const fetchServiceProviders = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${BaseUrl}/api/users/serviceProviders`);
+      const response = await axios.get(`${BaseUrl}/api/users/topRatedServiceProviders`);
       setServiceProviders(response.data);
     } catch (error) {
       console.error("Error fetching service providers:", error);
@@ -59,7 +59,7 @@ const ServiceSearchScreen = () => {
   );
 
   const filteredServiceProviders = serviceProviders.filter((provider) =>
-    `${provider.firstName} ${provider.lastName}`
+    `${provider?.firstName} ${provider?.lastName}`
       .toLowerCase()
       .includes(searchText.toLowerCase())
   );
@@ -72,7 +72,7 @@ const ServiceSearchScreen = () => {
       >
         <Image
           source={
-            item.Photo
+            item?.Photo
               ? { uri: `${BaseUrl}/` + item.Photo }
               : require("../../assets/avatar.png")
           }
@@ -116,7 +116,7 @@ const ServiceSearchScreen = () => {
     >
       <Image
         source={
-          item.Photo
+          item?.Photo
             ? { uri: `${BaseUrl}/` + item.Photo }
             : require("../../assets/avatar.png")
         }

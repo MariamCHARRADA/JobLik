@@ -12,8 +12,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import colors from "../../utils/colors"; // Import your colors
 import Icon from "react-native-vector-icons/FontAwesome"; // Import icons
-import ServiceProviderReservationsScreen from "./ServiceProviderReservationsScreen";
-import ClientReservationsScreen from "./ClientReservationsScreen";
 const logo = require("../../assets/jobLogo.png");
 
 export default function ProfileScreen() {
@@ -44,12 +42,13 @@ export default function ProfileScreen() {
   };
 
   const navigateToReservations = useCallback((user) => {
-    if (user.role === "client") {
-      navigation.navigate("ClientReservations", { userId: user });
-    } else if (user.role === "serviceProvider") {
-      navigation.navigate("ServiceProviderReservations", { userId: user });
-    }
+    navigation.navigate("Reservations", { userId: user });
   }, [navigation]);
+
+  const navigateToReservationRequests = useCallback((user) => {
+    navigation.navigate("ServiceProviderReservations", { userId: user });
+  }, [navigation]);
+
 
   useFocusEffect(
     useCallback(() => {
@@ -98,8 +97,30 @@ export default function ProfileScreen() {
           color={colors.PRIMARY}
           style={styles.icon}
         />
-        <Text style={styles.cardText}>Reservations</Text>
+        <Text style={styles.cardText}>My Reservations</Text>
       </TouchableOpacity>
+
+       {/* New Button for Reservation Requests (Service Providers Only) */}
+       {userData?.role === "serviceProvider" && (
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => {
+              if (userData) {
+                navigateToReservationRequests(userData);
+              } else {
+                console.warn("User data not yet loaded.");
+              }
+            }}
+          >
+            <Icon
+              name="list-alt"
+              size={20}
+              color={colors.PRIMARY}
+              style={styles.icon}
+            />
+            <Text style={styles.cardText}>Incoming Requests</Text>
+          </TouchableOpacity>
+        )}
 
       {/* Logout Button */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>

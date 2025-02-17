@@ -29,7 +29,6 @@ const logo = require("../../assets/jobLogo.png");
 
 export default function LoginForm() {
   const navigation = useNavigation();
-  const [rememberMe, setRememberMe] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -105,21 +104,6 @@ export default function LoginForm() {
               />
             </View>
 
-            <View style={styles.rememberView}>
-              <View style={styles.switch}>
-                <Switch
-                  value={rememberMe}
-                  onValueChange={setRememberMe}
-                  trackColor={{ true: colors.PRIMARY, false: "#ccc" }}
-                  thumbColor={rememberMe ? colors.WHITE : "#f4f3f4"}
-                />
-                <Text style={styles.rememberText}>Remember Me</Text>
-              </View>
-              <Pressable onPress={() => Alert.alert("Forget Password!")}>
-                <Text style={styles.forgetText}>Forgot Password?</Text>
-              </Pressable>
-            </View>
-
             <View style={styles.buttonView}>
               <TouchableOpacity style={styles.button} onPress={handleLogin}>
                 <Text style={styles.buttonText}>LOGIN</Text>
@@ -143,7 +127,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: width * 0.1,
-    marginTop: 40
+    marginTop: 40,
   },
   header: {
     alignItems: "center",
@@ -156,11 +140,12 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   title: {
-    fontSize: width * 0.08,
+    fontSize: 33,
+    width: "50%",
     fontWeight: "bold",
     color: colors.WHITE,
     textAlign: "center",
-    marginTop: 10,
+    marginTop: 5,
   },
   image: {
     height: width * 0.25,
@@ -185,32 +170,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: colors.LIGHT_GREEN,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  rememberView: {
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  switch: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  rememberText: {
-    fontSize: 14,
-    marginLeft: 5,
-    color: "#555",
-  },
-  forgetText: {
-    fontSize: 14,
-    color: colors.PRIMARY,
-    fontWeight: "600",
   },
   buttonView: {
     width: "100%",
@@ -220,6 +179,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.PRIMARY,
     height: 50,
     borderRadius: 25,
+    marginTop: 20,
     alignItems: "center",
     justifyContent: "center",
     elevation: 4,

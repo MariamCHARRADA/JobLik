@@ -49,7 +49,7 @@ const ServiceProposalsScreen = ({ route }) => {
     <View style={styles.card}>
       <Image
         source={
-          item.provider.Photo
+          item.provider?.Photo
             ? { uri: `${BaseUrl}/` + item.provider.Photo }
             : require("../../assets/avatar.png")
         }
@@ -57,10 +57,10 @@ const ServiceProposalsScreen = ({ route }) => {
       />
       <View style={styles.details}>
         <Text style={styles.providerName}>
-          {item.provider.firstName} {item.provider.lastName}
+          {item.provider?.firstName} {item.provider?.lastName}
         </Text>
         <Text style={styles.serviceName}>{item.title}</Text>
-        <Text style={styles.rating}>⭐ {item.provider.averageRating.toFixed(1)}</Text>
+        <Text style={styles.rating}>⭐ {item.provider?.averageRating.toFixed(1)}</Text>
         <Text style={styles.price}>{item.price} TND</Text>
       </View>
       <TouchableOpacity

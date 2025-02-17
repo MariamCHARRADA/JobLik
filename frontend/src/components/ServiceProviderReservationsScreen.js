@@ -90,43 +90,73 @@ const ServiceProviderReservationsScreen = ({ route }) => {
   }, [status]);
 
   const confirmReservation = async (reservationId) => {
-    try {
-      const token = await getToken();
-      await axios.put(
-        `${BaseUrl}/api/reservations/${reservationId}/status`,
-        { status: "confirmed" },
+    Alert.alert(
+      "Confirm Reservation",
+      "Are you sure you want to confirm this reservation?",
+      [
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Confirm",
+          onPress: async () => {
+            try {
+              const token = await getToken();
+              await axios.put(
+                `${BaseUrl}/api/reservations/${reservationId}/status`,
+                { status: "confirmed" },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+              fetchReservations();
+              Alert.alert("Success", "Reservation confirmed!");
+            } catch (error) {
+              console.error("Error confirming reservation:", error);
+              Alert.alert("Error", "Failed to confirm reservation.");
+            }
           },
-        }
-      );
-      fetchReservations();
-      Alert.alert("Success", "Reservation confirmed!");
-    } catch (error) {
-      console.error("Error confirming reservation:", error);
-      Alert.alert("Error", "Failed to confirm reservation.");
-    }
+        },
+      ]
+    );
   };
-
+  
   const rejectReservation = async (reservationId) => {
-    try {
-      const token = await getToken();
-      await axios.put(
-        `${BaseUrl}/api/reservations/${reservationId}/status`,
-        { status: "rejected" },
+    Alert.alert(
+      "Reject Reservation",
+      "Are you sure you want to reject this reservation?",
+      [
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Reject",
+          onPress: async () => {
+            try {
+              const token = await getToken();
+              await axios.put(
+                `${BaseUrl}/api/reservations/${reservationId}/status`,
+                { status: "rejected" },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+              fetchReservations();
+              Alert.alert("Success", "Reservation rejected!");
+            } catch (error) {
+              console.error("Error rejecting reservation:", error);
+              Alert.alert("Error", "Failed to reject reservation.");
+            }
           },
-        }
-      );
-      fetchReservations();
-      Alert.alert("Success", "Reservation rejected!");
-    } catch (error) {
-      console.error("Error rejecting reservation:", error);
-      Alert.alert("Error", "Failed to reject reservation.");
-    }
+        },
+      ]
+    );
   };
 
   const renderReservationItem = ({ item }) => (
@@ -136,12 +166,19 @@ const ServiceProviderReservationsScreen = ({ route }) => {
         source={item.Client?.Photo ? { uri: `${BaseUrl}/` + item.Client.Photo } : logoAvatar}
         style={styles.clientPhoto}
       />
-      <Text style={styles.clientName}>
-        {item.Client?.firstName} {item.Client?.lastName}
+
+      <Text style={styles.serviceTitle}>
+        {item.ServiceProposal?.title}({item.ServiceProposal?.price} TND)
       </Text>
 
       <Text style={styles.serviceName}>
         📋 {item.ServiceProposal?.service?.Name}
+      </Text>
+      <Text style={styles.clientName}>
+        {item.Client?.firstName} {item.Client?.lastName}
+      </Text>
+      <Text style={styles.dateTime}>
+        {moment(item.Date).format("YYYY-MM-DD")} - {item.Time}
       </Text>
       {item.Client?.address && (
         <Text style={styles.addressInfo}>
@@ -150,26 +187,31 @@ const ServiceProviderReservationsScreen = ({ route }) => {
       )}
       <Text style={styles.contactInfo}>📞 {item.Client?.phone}</Text>
 
-      <Text style={styles.dateTime}>
-        {moment(item.Date).format("YYYY-MM-DD")} - {item.Time}
-      </Text>
+
       {userId.role === "serviceProvider" && item.Status === "pending" && (
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, styles.confirmButton]}
-            onPress={() => confirmReservation(item._id)}
-          >
-            <Text style={styles.buttonText}>Confirm</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, styles.rejectButton]}
-            onPress={() => rejectReservation(item._id)}
-          >
-            <Text style={styles.buttonText}>Reject</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.textButton}
+          onPress={() => confirmReservation(item._id)}
+        >
+          <Ionicons name="checkmark" size={20} color={colors.DARKER} />
+          <Text style={[styles.textButtonText, { color: colors.PRIMARY }]}>
+            Confirm
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.textButton}
+          onPress={() => rejectReservation(item._id)}
+        >
+          <Ionicons name="close" size={19} color={colors.DARK} />
+          <Text style={[styles.textButtonText, { color: colors.PRIMARY }]}>
+            Reject
+          </Text>
+        </TouchableOpacity>
+      </View>
+    )}
+  </View>
   );
 
   return (
@@ -182,7 +224,7 @@ const ServiceProviderReservationsScreen = ({ route }) => {
           style={{ margin: 25 }}
         />
       </TouchableOpacity>
-      <Text style={styles.title}>Reservations</Text>
+      <Text style={styles.title}>Incoming Requests</Text>
       {/* Tab Navigation */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
@@ -285,7 +327,7 @@ const styles = StyleSheet.create({
     color: "#333",
     textAlign: "center",
     marginBottom: 10,
-    marginTop: -55
+    marginTop: -55,
   },
   tabContainer: {
     flexDirection: "row",
@@ -318,23 +360,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 15,
     padding: 20,
+    paddingHorizontal: 25,
     marginBottom: 15,
     elevation: 2,
     width: "95%",
-    alignSelf: "center"
+    alignSelf: "center",
   },
   clientName: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#333",
-    marginBottom: 5,
-    padding: 5
+    marginTop: 7,
+  },
+  serviceTitle: {
+    fontSize: 18,
+    color: colors.DARKER,
+    marginTop: 3,
+    fontWeight: "bold",
   },
   serviceName: {
     fontSize: 16,
-    color: colors.DARK,
+    color: "#777",
     marginTop: 3,
-    fontWeight: "bold",
   },
   contactInfo: {
     fontSize: 14,
@@ -354,37 +401,21 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
     marginTop: 12,
-    width: "60%",
+    width: "30%",
+    alignSelf: "left",
+    alignItems: "flex-start",
     justifyContent: "center",
+    marginLeft: 40
   },
-  button: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    flex: 0.48,
-    marginHorizontal: 3,
-    elevation: 2,
+  textButton: {
+    flexDirection: "row",
+    marginHorizontal: 18,
   },
-  confirmButton: {
-    backgroundColor: colors.GREEN,
-  },
-  rejectButton: {
-    backgroundColor: "rgb(177, 6, 6)",
-    
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
-    fontSize: 14,
-  },
-  price: {
+  textButtonText: {
     fontSize: 16,
     fontWeight: "bold",
-    marginTop: 5,
-    color: colors.GREEN,
+    marginLeft: 2,
   },
   loadingContainer: {
     flex: 1,
@@ -393,25 +424,12 @@ const styles = StyleSheet.create({
   },
   clientPhoto: {
     position: "absolute",
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 110,
+    height: 110,
+    borderRadius: 100,
     right: 30,
-    top: 30,
+    top: 55,
     alignSelf: "flex-end",
-  },
-  cancelButton: {
-    backgroundColor: colors.RED,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    marginTop: 10,
-    alignSelf: "flex-start", // Aligns button to the start of the card
-  },
-  cancelButtonText: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
   },
 });
 export default ServiceProviderReservationsScreen;

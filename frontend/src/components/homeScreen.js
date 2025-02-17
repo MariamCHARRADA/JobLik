@@ -6,7 +6,6 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  ScrollView,
   Dimensions,
 } from "react-native";
 import axios from "axios";
@@ -30,57 +29,38 @@ export default function HomeScreen({ route }) {
   const [loading, setLoading] = useState(true);
 
   const flatListRef = useRef(null);
-  let scrollIndex = 0;
+  const scrollIndex = useRef(0);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get(
-          `${BaseUrl}/api/categories/getCategories`
-        );
-        setCategories(response.data);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
+  // Fetch data functions
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(
+        `${BaseUrl}/api/categories/getCategories`
+      );
+      setCategories(response.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
 
-    const fetchProposals = async () => {
-      try {
-        const response = await axios.get(
-          `${BaseUrl}/api/proposal/get5Proposals`
-        );
-        setProposals(response.data);
-      } catch (error) {
-        console.error("Error fetching proposals:", error);
-      }
-    };
+  const fetchProposals = async () => {
+    try {
+      const response = await axios.get(`${BaseUrl}/api/proposal/get5Proposals`);
+      setProposals(response.data);
+    } catch (error) {
+      console.error("Error fetching proposals:", error);
+    }
+  };
 
-    const fetchUserData = async () => {
-      try {
-        const userData = await AsyncStorage.getItem("userData");
-        const UserData1 = JSON.parse(userData);
-        setUserData(UserData1);
-      } catch (e) {
-        console.log("error fetching user data", e);
-      }
-    };
-
-    const fetchAllData = () => {
-      fetchUserData();
-      fetchCategories();
-      fetchServices();
-      fetchProposals();
-    };
-
-    // Initial fetch when component mounts
-    fetchAllData();
-
-    // Set up interval to fetch data every 5 seconds (5000ms)
-    const interval = setInterval(fetchAllData, 5000);
-
-    // Clean up the interval when component unmounts
-    return () => clearInterval(interval);
-  }, []);
+  const fetchUserData = async () => {
+    try {
+      const userData = await AsyncStorage.getItem("userData");
+      const UserData1 = JSON.parse(userData);
+      setUserData(UserData1);
+    } catch (e) {
+      console.log("error fetching user data", e);
+    }
+  };
 
   const fetchServices = async () => {
     try {
@@ -91,39 +71,50 @@ export default function HomeScreen({ route }) {
     }
   };
 
+  const fetchAllData = () => {
+    fetchUserData();
+    fetchCategories();
+    fetchServices();
+    fetchProposals();
+  };
+
+  useEffect(() => {
+    // Initial fetch when component mounts
+    fetchAllData();
+
+    // Set up interval to fetch data every 5 seconds (5000ms)
+    const interval = setInterval(fetchAllData, 5000);
+
+    // Clean up the interval when component unmounts
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
       if (flatListRef.current && services.length > 0) {
-        if (scrollIndex < services.length - 1) {
-          // Scroll to the next item
-          scrollIndex++;
-          flatListRef.current.scrollToIndex({
-            index: scrollIndex,
-            animated: true,
-            viewPosition: 0.5, // Centers the item
-          });
-        } else {
-          // Reset to the first item
-          scrollIndex = 0;
-          flatListRef.current.scrollToIndex({
-            index: scrollIndex,
-            animated: true,
-            viewPosition: 0.5,
-          });
-        }
+        // Update the scroll index
+        scrollIndex.current = (scrollIndex.current + 1) % services.length;
+
+        // Scroll to the next item
+        flatListRef.current.scrollToIndex({
+          index: scrollIndex.current,
+          animated: true,
+          viewPosition: 0.5, // Centers the item
+        });
       }
-    }, 10000); // Auto-scroll every 1.5 seconds
+    }, 1500); // Auto-scroll every 1.5 seconds
 
     return () => clearInterval(interval); // Cleanup on unmount
   }, [services]);
 
+  // Render functions
   const renderCategoryItem = ({ item }) => (
     <TouchableOpacity
       style={styles.categoryItem}
       onPress={() =>
         navigation.navigate("FilteredProposals", {
-          filterType: "category", // Filter by category
-          filterId: item._id, // Use item._id instead of category._id
+          filterType: "category",
+          filterId: item._id,
         })
       }
     >
@@ -137,53 +128,42 @@ export default function HomeScreen({ route }) {
     </TouchableOpacity>
   );
 
-  const renderProposalItem = ({ item }) => {
-    return (
-      <View style={styles.card}>
-        {/* Service Provider Photo */}
-        <Image
-          source={
-            item.provider.Photo
-              ? { uri: `${BaseUrl}/` + item.provider.Photo }
-              : require("../../assets/avatar.png") // Default image if no photo
-          }
-          style={styles.profileImage}
-        />
-
-        {/* Service Details */}
-        <View style={styles.details}>
-          <Text style={styles.providerName}>
-            {item.provider.firstName} {item.provider.lastName}
-          </Text>
-          <Text style={styles.serviceName1}>{item.service?.Name}</Text>
-          <Text style={styles.rating}>
-            ⭐ {item.provider.averageRating.toFixed(1)}
-          </Text>
-          <Text style={styles.price}>{item.price} TND</Text>
-        </View>
-
-        {/* Calendar Icon */}
-        <TouchableOpacity
-          onPress={() => handleBookingPress(item)}
-          style={styles.calendarIconContainer}
-        >
-          <Icon
-            name="calendar"
-            size={28}
-            color={colors.DARK}
-            marginRight="15"
-          />
-        </TouchableOpacity>
+  const renderProposalItem = ({ item }) => (
+    <View style={styles.card}>
+      <Image
+        source={
+          item.provider?.Photo
+            ? { uri: `${BaseUrl}/` + item.provider.Photo }
+            : require("../../assets/avatar.png")
+        }
+        style={styles.profileImage}
+      />
+      <View style={styles.details}>
+        <Text style={styles.providerName}>
+          {item.provider?.firstName} {item.provider?.lastName}
+        </Text>
+        <Text style={styles.serviceName1}>{item.service?.Name}</Text>
+        <Text style={styles.rating}>
+          ⭐ {item.provider?.averageRating.toFixed(1)}
+        </Text>
+        <Text style={styles.price}>{item.price} TND</Text>
       </View>
-    );
-  };
+      <TouchableOpacity
+        onPress={() => handleBookingPress(item)}
+        style={styles.calendarIconContainer}
+      >
+        <Icon name="calendar" size={28} color={colors.DARK} marginRight="15" />
+      </TouchableOpacity>
+    </View>
+  );
+
   const handleBookingPress = async (item) => {
-    console.log("test");
     navigation.navigate("BookingScreen", {
-      serviceProposal: item, // Pass the entire service proposal
-      provider: item.provider, // Pass the provider details
+      serviceProposal: item,
+      provider: item.provider,
     });
   };
+
   const handleServicePress = (item) => {
     navigation.navigate("FilteredProposals", {
       filterType: "service",
@@ -221,16 +201,13 @@ export default function HomeScreen({ route }) {
                 </TouchableOpacity>
               )}
               getItemLayout={(data, index) => ({
-                length: width * 0.6 + 10, // Width of each item + margin
+                length: width * 0.6 + 10,
                 offset: (width * 0.6 + 10) * index,
                 index,
               })}
             />
-  
             {/* Categories Section */}
             <Text style={styles.headerTextCategories}>Categories📌</Text>
-            <View style={styles.container1}>
-
             <FlatList
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -240,25 +217,19 @@ export default function HomeScreen({ route }) {
             />
 
             {/* Newest Proposals Section */}
-            <Text style={styles.headerTextCategories}>Newest Proposals 📢 </Text>
-</View>
+            <Text style={styles.headerTextCategories}>Proposals Feed 📢</Text>
           </>
-          
         }
-
         data={proposals}
         keyExtractor={(item) => item._id}
         renderItem={renderProposalItem}
         contentContainerStyle={styles.listContainer}
       />
-
     </View>
-
   );
-  
 }
-const styles = StyleSheet.create({
 
+const styles = StyleSheet.create({
   headerTextServices: {
     position: "absolute",
     top: 90,
@@ -281,7 +252,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     width: "100%",
-    alignSelf: "center"
+    alignSelf: "center",
   },
   card: {
     flexDirection: "row",
@@ -324,7 +295,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#27ae60",
   },
-
   TextService: {
     fontSize: 20,
     position: "relative",
@@ -337,17 +307,13 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 2, height: 1 },
     textShadowRadius: 4,
   },
-
-  // Home screen container
   container: {
     backgroundColor: colors.PERFECT_GRAY,
     flex: 1,
     width: "111%",
     alignSelf: "center",
-        marginTop: -10,
-
+    marginTop: -10,
   },
-  // logo
   Header: {
     backgroundColor: colors.PRIMARY,
     flexDirection: "row",
@@ -363,25 +329,6 @@ const styles = StyleSheet.create({
     marginTop: 35,
     marginBottom: 15,
   },
-  logoAvatar: {
-    width: 50,
-    height: 50,
-    marginTop: 35,
-    marginBottom: 15,
-  },
-  slogan: {
-    fontSize: 15,
-    fontFamily: "serif",
-    fontWeight: "bold",
-    color: "#3d3d3d",
-  },
-
-  //services scroll
-  servicesList: {
-    marginTop: 5,
-    flexDirection: "row",
-  },
-
   carouselImage: {
     width: width * 0.6,
     height: width * 0.6 * 0.56,
@@ -392,17 +339,6 @@ const styles = StyleSheet.create({
     margin: 5,
     marginTop: 30,
   },
-
-  // Categories List
-  categoriesText: {
-    alignSelf: "flex-start",
-    fontFamily: "serif",
-    marginBottom: 20,
-    paddingHorizontal: 8,
-    fontSize: 14,
-    color: "#000",
-  },
-
   imageContainer: {
     justifyContent: "center",
     alignItems: "center",
@@ -415,10 +351,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   categoryItem: {
-    alignItems: "center", // Centers content
+    alignItems: "center",
   },
   categoryImage: {
-    width: 40, // Adjust size as needed
+    width: 40,
     height: 40,
     backgroundColor: colors.WHITE,
     padding: 10,
@@ -427,8 +363,8 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "bold",
     color: "black",
-    textAlign: "center", // Ensures one-line text is centered
-    marginTop: 5, // Space between image and text
+    textAlign: "center",
+    marginTop: 5,
   },
   calendarIconContainer: {
     justifyContent: "center",

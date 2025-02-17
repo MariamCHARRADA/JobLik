@@ -13,6 +13,19 @@ const getUsers = asyncHandler(async (req, res) => {
   }
 });
 
+//@desc Get a single user by ID
+//@route GET /api/users/getUser/:id
+//@access public
+const getUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    res.status(404);
+    throw new Error("User Not Found");
+  }
+  res.status(200).json(user);
+
+});
+
 //@desc Register a user
 //@route POST /api/users/register
 //@access public
@@ -28,7 +41,8 @@ const registerUser = asyncHandler(async (req, res) => {
       !password ||
       !role ||
       !city ||
-      !phone
+      !phone ||
+      !address
     ) {
       res.status(400);
       throw new Error("All fields are mandatory");
@@ -275,7 +289,6 @@ const getTopRatedServiceProviders = asyncHandler(async (req, res) => {
       role: "serviceProvider",
     })
       .sort({ averageRating: -1 })
-      .limit(5);
     if (!topRatedServiceProviders || topRatedServiceProviders.length === 0) {
       res.status(404);
       throw new Error("No top-rated service providers found");
@@ -287,6 +300,7 @@ const getTopRatedServiceProviders = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  getUser,
   registerUser,
   loginUser,
   getUsers,

@@ -16,7 +16,6 @@ import { BaseUrl } from "../../config/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import colors from "../../utils/colors";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import Icon from "react-native-vector-icons/FontAwesome";
 
 const ProviderDetailsScreen = ({ route, navigation }) => {
   const { provider } = route.params; // Get the providerId from the navigation params
@@ -124,14 +123,14 @@ const ProviderDetailsScreen = ({ route, navigation }) => {
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <ScrollView showsVerticalScrollIndicator={false}>
+      <View style={styles.container}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons
             name="arrow-back"
             size={24}
             color={colors.DARKER}
-            style={{  left: -155, position: "absolute", top: 10 }}
+            style={{ left: -155, position: "absolute", top: 10 }}
           />
         </TouchableOpacity>
 
@@ -147,15 +146,15 @@ const ProviderDetailsScreen = ({ route, navigation }) => {
           />
           <View style={styles.providerDetails}>
             <Text style={styles.providerName}>
-              {provider.firstName} {provider.lastName}
+              {provider?.firstName} {provider?.lastName}
             </Text>
-            <Text style={styles.providerInfo}>📞 {provider.phone}</Text>
-            <Text style={styles.providerInfo}>📍 {provider.city}</Text>
+            <Text style={styles.providerInfo}>📞 {provider?.phone}</Text>
+            <Text style={styles.providerInfo}>📍 {provider?.address}</Text>
 
             <View style={styles.ratingContainer}>
               <Ionicons name="star" size={15} color="#FFD700" />
               <Text style={styles.ratingText}>
-                {provider.averageRating.toFixed(1)}
+                {provider?.averageRating.toFixed(1)}
               </Text>
             </View>
           </View>
@@ -179,6 +178,9 @@ const ProviderDetailsScreen = ({ route, navigation }) => {
                 <Text style={styles.proposalPrice}>{item.price} TND</Text>
               </TouchableOpacity>
             )}
+            scrollEnabled={true}
+            nestedScrollEnabled={true}
+            style={{ height: 210 }} // Set a fixed height for the FlatList
           />
         </View>
 
@@ -241,8 +243,8 @@ const ProviderDetailsScreen = ({ route, navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 };
 
@@ -387,7 +389,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     alignItems: "center",
-    marginBottom: 20
+    marginBottom: 20,
   },
   addCommentButtonText: {
     fontSize: 16,

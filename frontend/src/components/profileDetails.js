@@ -35,8 +35,10 @@ export default function ProfileDetails({ route }) {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get(`${BaseUrl}/api/userList/${userId?._id}`);
+        const response = await axios.get(`${BaseUrl}/api/users/getUser/${userId}`);
         const userData = response.data;
+        console.log("User Data:", userData); // Log the response
+
         console.log(userId);
         setFirstName(userData.firstName || "");
         setLastName(userData.lastName || "");
@@ -154,7 +156,7 @@ export default function ProfileDetails({ route }) {
           <Icon name="map-marker" size={20} color={colors.PRIMARY} style={styles.inputIcon} />
           <TextInput
             style={styles.input}
-            placeholder="Address"
+            placeholder="address"
             value={address}
             onChangeText={setAddress}
             placeholderTextColor="#aaa"

@@ -1,5 +1,6 @@
 const express = require("express");
 const {
+  getUser,
   registerUser,
   loginUser,
   getUsers,
@@ -18,7 +19,8 @@ const router = express.Router();
 router.post("/register", upload.single("image"), registerUser);
 router.post("/login", loginUser);
 router.get("/userList", getUsers);
-router.delete("/deleteUser/:id", protect, deleteUser);
+router.get("/getUser/:id", getUser);
+router.delete("/deleteUser/:id", deleteUser);
 router.put("/updateUser/:id", protect, updateUser);
 router.get("/:serviceProviderId/profile", getCommentsAndRatings);
 router.post("/:serviceProviderId/comments", protect, addCommentAndRating);

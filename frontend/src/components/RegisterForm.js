@@ -30,7 +30,7 @@ export default function RegisterForm() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("client");
-  const [AddressS, setAddressS] = useState("");
+  const [address, setAddress] = useState("");
   const [cities, setCities] = useState([]);
   const [selectedCity, setSelectedCity] = useState("");
   const [image, setImage] = useState(null);
@@ -83,7 +83,7 @@ export default function RegisterForm() {
           role,
           city: selectedCity,
           phone,
-          ...(role === "client" && { address: AddressS }),
+          address
         })
       );
 
@@ -99,7 +99,6 @@ export default function RegisterForm() {
           type,
         });
       }
-      console.log(image,"testt");
       const response = await axios.post(
         `${BaseUrl}/api/users/register`,
         formData,
@@ -207,6 +206,7 @@ export default function RegisterForm() {
             style={styles.input}
             placeholder="Email"
             value={email}
+            keyboardType="email-address"
             onChangeText={setEmail}
             autoCorrect={false}
             autoCapitalize="none"
@@ -218,6 +218,7 @@ export default function RegisterForm() {
             onChangeText={setPhone}
             autoCorrect={false}
             maxLength={8}
+            keyboardType="numeric"
             autoCapitalize="none"
           />
 
@@ -238,18 +239,14 @@ export default function RegisterForm() {
               ))}
             </Picker>
           </View>
-
-          {/* Address Input for Clients */}
-          {role === "client" && (
-            <TextInput
-              style={styles.input}
-              placeholder="Address"
-              value={AddressS}
-              onChangeText={setAddressS}
-              autoCorrect={false}
-              autoCapitalize="none"
-            />
-          )}
+          <TextInput
+            style={styles.input}
+            placeholder="Address"
+            value={address}
+            onChangeText={setAddress}
+            autoCorrect={false}
+            autoCapitalize="none"
+          />
           <TextInput
             style={styles.input}
             placeholder="Password"
@@ -332,7 +329,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     backgroundColor: colors.PRIMARY,
     width: "110%",
-    height: "25%",
+    height: 200,
     borderBottomEndRadius: 200,
     borderBottomStartRadius: 200,
   },
@@ -354,7 +351,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between", // Distributes space
     width: "100%",
     gap: 8,
-    
   },
   inputWrapper: {
     flex: 1,
@@ -377,10 +373,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   selectedImage: {
-    width: 100,
-    height: 100,
-    marginBottom: 20,
-    borderRadius: 10,
+    width: 200,
+    height: 200,
+    marginBottom: 30,
+    borderRadius: 100,
   },
   inputContainer: {
     width: "90%",
@@ -421,7 +417,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     width: "90%",
     gap: 20,
-
   },
   roleButton: {
     flex: 1,
@@ -475,6 +470,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
+    height: "110%",
   },
   modalText: {
     fontSize: 18,

@@ -40,7 +40,6 @@ const FilteredProposalsScreen = ({ route }) => {
   };
 
   const handleBookingPress = (item) => {
-    console.log("test");
     navigation.navigate("BookingScreen", {
       serviceProposal: item, // Pass the entire service proposal
       provider: item.provider, // Pass the provider details
@@ -51,13 +50,14 @@ const FilteredProposalsScreen = ({ route }) => {
     return (
       <TouchableOpacity
         style={styles.card}
-        onPress={() => handleBookingPress(item)} // Use handleBookingPress here
+        onPress={() => handleBookingPress(item) 
+        } // Use handleBookingPress here
       >
         {/* Service Provider Photo */}
         <Image
           source={
-            item.provider.Photo
-              ? { uri: `${BaseUrl}/` + item.provider.Photo }
+            item.provider?.Photo
+            ? { uri: `${BaseUrl}/` + item.provider.Photo }
               : require("../../assets/avatar.png") // Default image if no photo
           }
           style={styles.profileImage}
@@ -66,11 +66,11 @@ const FilteredProposalsScreen = ({ route }) => {
         {/* Service Details */}
         <View style={styles.details}>
           <Text style={styles.providerName}>
-            {item.provider.firstName} {item.provider.lastName}
+            {item.provider?.firstName} {item.provider?.lastName}
           </Text>
           <Text style={styles.serviceName1}>{item.service?.Name}</Text>
           <Text style={styles.rating}>
-            ⭐ {item.provider.averageRating?.toFixed(1)}
+            ⭐ {item.provider?.averageRating?.toFixed(1)}
           </Text>
           <Text style={styles.price}>{item.price} TND</Text>
         </View>
@@ -132,13 +132,7 @@ const styles = StyleSheet.create({
   },
   proposalDetails: {
     flex: 1,
-  },
-  proposalTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.DARKER,
-  },
-  proposalDescription: {
+  },  proposalDescription: {
     fontSize: 14,
     color: colors.BLACK,
     marginTop: 5,
@@ -160,10 +154,12 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   profileImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
+    width: 65,
+    height: 65,
+    borderRadius: 50,
+    justifyContent: "center",
+    alignSelf: "center",
+    margin: 10
   },
   details: {
     flex: 1,
