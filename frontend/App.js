@@ -20,9 +20,8 @@ import FilteredProposalsScreen from "./src/components/FilteredProposalsScreen";
 import ReservationsScreen from "./src/components/ReservationsScreen";
 import ServiceProviderReservationsScreen from "./src/components/ServiceProviderReservationsScreen";
 import ProviderDetailsScreen from "./src/components/ProviderDetailsScreen";
-import SplashScreen from "./src/components/splashScreen"; // Corrected import
+import SplashScreen from "./src/components/splashScreen";
 
-// Utils
 import colors from "./utils/colors";
 
 const Stack = createNativeStackNavigator();
@@ -126,7 +125,7 @@ export default function App() {
       setIsShowSplash(false);
     }, 3000);
 
-    return () => clearTimeout(timer); // Cleanup timer
+    return () => clearTimeout(timer);
   }, []);
 
   return (
