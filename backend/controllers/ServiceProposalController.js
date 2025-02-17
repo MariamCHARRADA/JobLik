@@ -47,7 +47,7 @@ const getLast5ServiceProposals = asyncHandler(async (req, res) => {
   try {
     const serviceProposals = await ServiceProposal.find()
       .sort({ createdAt: -1 })
-      .limit(5) // Limit to the last 5 proposals
+      .limit(100)
       .populate("service")
       .populate("provider");
     res.status(200).json(serviceProposals);
@@ -107,7 +107,7 @@ const getServiceProposalsByCategory = asyncHandler(async (req, res) => {
     })
       .sort({ createdAt: -1 })
       .populate("service")
-      .populate("provider", "firstName lastName email averageRating");
+      .populate("provider");
 
     res.status(200).json(serviceProposals);
   } catch (error) {
@@ -131,11 +131,10 @@ const getServiceProposalsByService = asyncHandler(async (req, res) => {
     const serviceProposals = await ServiceProposal.find({ service: serviceId })
       .sort({ createdAt: -1 })
       .populate({
-        path: "provider",
-        populate: {
-          path: "comments.clientId",
-        },
-      });
+        path: "service",
+        select: "Name",
+      })
+      .populate("provider");
 
     res.status(200).json(serviceProposals);
   } catch (error) {
