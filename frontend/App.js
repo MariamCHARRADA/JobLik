@@ -20,7 +20,7 @@ import FilteredProposalsScreen from "./src/components/FilteredProposalsScreen";
 import ReservationsScreen from "./src/components/ReservationsScreen";
 import ServiceProviderReservationsScreen from "./src/components/ServiceProviderReservationsScreen";
 import ProviderDetailsScreen from "./src/components/ProviderDetailsScreen";
-import SplashScreen from "./src/components/s++---------plashScreen"; // Corrected import
+import SplashScreen from "./src/components/splashScreen"; // Corrected import
 
 // Utils
 import colors from "./utils/colors";
