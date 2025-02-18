@@ -50,14 +50,13 @@ const FilteredProposalsScreen = ({ route }) => {
     return (
       <TouchableOpacity
         style={styles.card}
-        onPress={() => handleBookingPress(item) 
-        } // Use handleBookingPress here
+        onPress={() => handleBookingPress(item)} // Use handleBookingPress here
       >
         {/* Service Provider Photo */}
         <Image
           source={
             item.provider?.Photo
-            ? { uri: `${BaseUrl}/` + item.provider.Photo }
+              ? { uri: `${BaseUrl}/` + item.provider.Photo }
               : require("../../assets/avatar.png") // Default image if no photo
           }
           style={styles.profileImage}
@@ -65,10 +64,12 @@ const FilteredProposalsScreen = ({ route }) => {
 
         {/* Service Details */}
         <View style={styles.details}>
+          <Text style={styles.serviceName2}> {item?.title}</Text>
+
           <Text style={styles.providerName}>
             {item.provider?.firstName} {item.provider?.lastName}
           </Text>
-          <Text style={styles.serviceName1}>{item.service?.Name}</Text>
+          <Text style={styles.serviceName1}>📋 {item.service?.Name}</Text>
           <Text style={styles.rating}>
             ⭐ {item.provider?.averageRating?.toFixed(1)}
           </Text>
@@ -132,7 +133,8 @@ const styles = StyleSheet.create({
   },
   proposalDetails: {
     flex: 1,
-  },  proposalDescription: {
+  },
+  proposalDescription: {
     fontSize: 14,
     color: colors.BLACK,
     marginTop: 5,
@@ -159,30 +161,38 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     justifyContent: "center",
     alignSelf: "center",
-    margin: 10
+    margin: 10,
   },
   details: {
     flex: 1,
     justifyContent: "center",
   },
   providerName: {
+    fontSize: 14,
+    color: colors.DARKER,
+    textAlign: "left",
+    marginLeft: 5,
+    fontStyle: "italic",
+  },
+  serviceName1: {
+    fontSize: 13,
+    color: "#777",
+    textAlign: "left",
+  },
+  serviceName2: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#333",
-  },
-  serviceName1: {
-    fontSize: 14,
-    color: "black",
-    textAlign: "left",
+    marginTop: 10
   },
   rating: {
     fontSize: 14,
-    color: "#f39c12",
+    color: "#666",
   },
   price: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#27ae60",
+    color: colors.GREEN,
   },
   calendarIconContainer: {
     justifyContent: "center",

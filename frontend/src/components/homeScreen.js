@@ -139,10 +139,12 @@ export default function HomeScreen({ route }) {
         style={styles.profileImage}
       />
       <View style={styles.details}>
+
+        <Text style={styles.serviceName1}>{item?.title}</Text>
         <Text style={styles.providerName}>
           {item.provider?.firstName} {item.provider?.lastName}
         </Text>
-        <Text style={styles.serviceName1}>{item.service?.Name}</Text>
+
         <Text style={styles.rating}>
           ⭐ {item.provider?.averageRating.toFixed(1)}
         </Text>
@@ -277,23 +279,29 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   providerName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
+    fontSize: 14,
+    color: "#777",
+    textAlign: "left",
+    fontStyle: "italic",
   },
-  serviceName1: {
+  serviceName2: {
     fontSize: 14,
     color: "black",
     textAlign: "left",
   },
+  serviceName1: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
   rating: {
     fontSize: 14,
-    color: "#f39c12",
+    color: "#666",
   },
   price: {
     fontSize: 14,
+    color: colors.GREEN,
     fontWeight: "bold",
-    color: "#27ae60",
   },
   TextService: {
     fontSize: 20,
