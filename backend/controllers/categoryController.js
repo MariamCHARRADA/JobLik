@@ -7,7 +7,7 @@ const { constants } = require("../constants");
 // @route   POST /api/categories
 // @access  Public
 const createCategory = asyncHandler(async (req, res) => {
-  const { Name } = req.body;
+  const { Name } = req.body; // destructuring : req.body.Name = new variable 'Name'
   let imageUrl = null;
 
   if (!Name) {
@@ -77,7 +77,7 @@ const getCategoryById = asyncHandler(async (req, res) => {
 // @route   PUT /api/categories/:id
 // @access  Public
 const updateCategory = asyncHandler(async (req, res) => {
-  const { Name, Photo, Services } = req.body;
+  const { Name, Photo, Services } = req.body; // destructuring
 
   const category = await Categories.findById(req.params.id);
 
