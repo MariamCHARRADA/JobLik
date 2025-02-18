@@ -7,7 +7,6 @@ const {
   updateReservationStatus,
   getClientReservations,
   getServiceProviderReservations,
-  getServiceProviderAsClientReservations, // Add the new function
 } = require("../controllers/reservationController");
 const { protect } = require("../middleware/authMiddleware");
 
