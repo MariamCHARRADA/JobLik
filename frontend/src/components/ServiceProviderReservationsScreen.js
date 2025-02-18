@@ -89,7 +89,7 @@ const ServiceProviderReservationsScreen = ({ route }) => {
     fetchReservations();
   }, [status]);
 
-  const confirmReservation = async (reservationId) => {
+  const confirmReservation = async (reservationId, selectedDate, selectedTime) => {
     Alert.alert(
       "Confirm Reservation",
       "Are you sure you want to confirm this reservation?",
@@ -103,6 +103,23 @@ const ServiceProviderReservationsScreen = ({ route }) => {
           onPress: async () => {
             try {
               const token = await getToken();
+  
+              // First, check if the reservation can be confirmed
+              const canConfirmResponse = await axios.get(
+                `${BaseUrl}/api/reservations/${reservationId}/can-confirm`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+  
+              if (!canConfirmResponse.data.canConfirm) {
+                Alert.alert("Error", canConfirmResponse.data.message);
+                return;
+              }
+  
+              // Proceed to confirm the reservation if it's allowed
               await axios.put(
                 `${BaseUrl}/api/reservations/${reservationId}/status`,
                 { status: "confirmed" },
@@ -112,17 +129,22 @@ const ServiceProviderReservationsScreen = ({ route }) => {
                   },
                 }
               );
-              fetchReservations();
+  
+              fetchReservations(); // Refresh reservations
               Alert.alert("Success", "Reservation confirmed!");
             } catch (error) {
-              console.error("Error confirming reservation:", error);
-              Alert.alert("Error", "Failed to confirm reservation.");
+              if (error.response && error.response.data && error.response.data.message) {
+                  Alert.alert("Sorry", error.response.data.message); // Display backend error message
+              } else {
+                  Alert.alert("Error", "Failed to confirm reservation.");
+              }
             }
           },
         },
       ]
     );
   };
+  
   
   const rejectReservation = async (reservationId) => {
     Alert.alert(

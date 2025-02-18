@@ -122,7 +122,7 @@ const BookingScreen = ({ route, navigation }) => {
       return;
     }
     try {
-      const response = await axios.post(
+       const response = await axios.post(
         `${BaseUrl}/api/reservations/createReservation`,
         {
           Date: selectedDate,
@@ -155,18 +155,15 @@ const BookingScreen = ({ route, navigation }) => {
           },
         ]
       );
-    } catch (error) {
-      console.log("Payload:", {
-        Date: selectedDate,
-        Time: selectedTime,
-        ServiceProposal: serviceProposal._id,
-        ServiceProvider: provider._id,
-        Client: userData._id,
-      });
-      Alert.alert(
-        "Oops! 😅",
-        "This slot is already booked! Please pick another one."
-      );
+
+    }
+    catch (error) {
+          console.log("now");
+             Alert.alert(
+                 "Oops! 😅",
+                 "This slot is already booked! Please pick another one."
+             );
+        
     }
   };
   const handleAddComment = async () => {

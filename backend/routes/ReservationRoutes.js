@@ -7,6 +7,7 @@ const {
   updateReservationStatus,
   getClientReservations,
   getServiceProviderReservations,
+  canConfirmReservation
 } = require("../controllers/reservationController");
 const { protect } = require("../middleware/authMiddleware");
 
@@ -20,5 +21,6 @@ router.put("/:reservationId/status", protect, updateReservationStatus);
 router.get("/client", protect, getClientReservations);
 router.delete("/:id", deleteReservation);
 router.get("/serviceProvider", protect, getServiceProviderReservations);
+router.get("/:reservationId/can-confirm", canConfirmReservation);
 
 module.exports = router;

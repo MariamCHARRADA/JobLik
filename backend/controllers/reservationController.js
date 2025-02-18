@@ -57,6 +57,7 @@ const createReservation = asyncHandler(async (req, res) => {
   });
 
   if (existingReservation) {
+    console.log("here");
     const error = new Error("Time slot is already reserved for this service");
     error.statusCode = constants.VALIDATION_ERROR;
     throw error;
@@ -132,6 +133,7 @@ const getAvailabilityForServiceProvider = asyncHandler(async (req, res) => {
 
   res.json({ slots });
 });
+
 
 //@desc Update reservation status
 //@route PUT /api/reservations/:reservationId/status
@@ -235,6 +237,39 @@ const getServiceProviderReservations = asyncHandler(async (req, res) => {
    res.status(200).json(reservations);
 });
 
+//@desc Check if a service provider can confirm a reservation without creating multiple bookings at the same time.
+//@route GET /api/reservations/:reservationId/can-confirm
+//@access Private
+const canConfirmReservation = asyncHandler(async (req, res) => {
+  const { reservationId } = req.params;
+
+  const reservation = await Reservation.findById(reservationId);
+
+  if (!reservation) {
+    const error = new Error("Reservation not found");
+    error.statusCode = constants.NOT_FOUND;
+    throw error;
+  }
+
+  const existingReservations = await Reservation.find({
+    ServiceProvider: reservation.ServiceProvider,
+    Date: reservation.Date,
+    Time: reservation.Time,
+    Status: "confirmed",
+    _id: { $ne: reservationId }, // Exclude the current reservation being checked
+  });
+
+  if (existingReservations.length > 0) {
+    return res.status(409).json({
+      canConfirm: false,
+      message: "There is already a confirmed reservation at this date and time",
+    });
+  }
+
+  res.status(200).json({ canConfirm: true, message: "Reservation can be confirmed." });
+});
+
+
 module.exports = {
    getReservations,
    createReservation,
@@ -243,4 +278,5 @@ module.exports = {
    updateReservationStatus,
    getClientReservations,
    getServiceProviderReservations,
+   canConfirmReservation
 };
