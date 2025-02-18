@@ -6,7 +6,7 @@ const errorHandler = (err, req, res, next) => {
       res.json({
         title: "Validation failed",
         message: err.message,
-        stackTrace: err.stack,
+        stackTrace: err.stack, // only in development for debugging
       });
       break;
     case constants.UNAUTHORIZED:
@@ -32,7 +32,7 @@ const errorHandler = (err, req, res, next) => {
       break;
     case constants.SERVER_ERROR:
       res.json({
-        title: "Not server error",
+        title: "Server error",
         message: err.message,
         stackTrace: err.stack,
       });
