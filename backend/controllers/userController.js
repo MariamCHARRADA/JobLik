@@ -2,15 +2,12 @@ const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
+const { constants } = require("../constants");
 
 //@desc Get all users
 const getUsers = asyncHandler(async (req, res) => {
-  try {
-    const users = await User.find();
-    res.status(200).json(users);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  const users = await User.find();
+  res.status(200).json(users);
 });
 
 //@desc Get a single user by ID
@@ -19,77 +16,75 @@ const getUsers = asyncHandler(async (req, res) => {
 const getUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) {
-    res.status(404);
-    throw new Error("User Not Found");
+    const error = new Error("User Not Found");
+    error.statusCode = constants.NOT_FOUND;
+    throw error;
   }
   res.status(200).json(user);
-
 });
 
 //@desc Register a user
 //@route POST /api/users/register
 //@access public
 const registerUser = asyncHandler(async (req, res) => {
-  try {
-    const { firstName, lastName, email, password, role, city, phone, address } =
-      JSON.parse(req.body.data);
+  const { firstName, lastName, email, password, role, city, phone, address } =
+    JSON.parse(req.body.data);
 
-    if (
-      !firstName ||
-      !lastName ||
-      !email ||
-      !password ||
-      !role ||
-      !city ||
-      !phone ||
-      !address
-    ) {
-      res.status(400);
-      throw new Error("All fields are mandatory");
-    }
-
-    let imageUrl = null;
-    console.log("req.body.data", req.body.data);
-
-    const userAvailable = await User.findOne({ email });
-    if (userAvailable) {
-      res.status(400);
-      throw new Error("User already registered!");
-    }
-
-    if (!password) {
-      res.status(400);
-      throw new Error("Password is required");
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    if (req.file) {
-      imageUrl = req.file.path;
-    }
-
-    const user = await User.create({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-      role,
-      city,
-      address,
-      phone,
-      Photo: imageUrl,
-    });
-
-    if (user) {
-      res.status(201).json({ user: user });
-    } else {
-      res.status(400);
-      throw new Error("User data is not valid");
-    }
-  } catch (error) {
-    console.error("Error in registerUser:", error);
-    res.status(500).json({ message: error.message });
+  if (
+    !firstName ||
+    !lastName ||
+    !email ||
+    !password ||
+    !role ||
+    !city ||
+    !phone ||
+    !address
+  ) {
+    const error = new Error("All fields are mandatory");
+    error.statusCode = constants.VALIDATION_ERROR;
+    throw error;
   }
+
+  let imageUrl = null;
+
+  const userAvailable = await User.findOne({ email });
+  if (userAvailable) {
+    const error = new Error("User already registered!");
+    error.statusCode = constants.VALIDATION_ERROR;
+    throw error;
+  }
+
+  if (!password) {
+    const error = new Error("Password is required");
+    error.statusCode = constants.VALIDATION_ERROR;
+    throw error;
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  if (req.file) {
+    imageUrl = req.file.path;
+  }
+
+  const user = await User.create({
+    firstName,
+    lastName,
+    email,
+    password: hashedPassword,
+    role,
+    city,
+    address,
+    phone,
+    Photo: imageUrl,
+  });
+
+  if (!user) {
+    const error = new Error("User data is not valid");
+    error.statusCode = constants.SERVER_ERROR;
+    throw error;
+  }
+
+  res.status(201).json({ user: user });
 });
 
 //@desc login a user
@@ -98,10 +93,13 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    res.status(400);
-    throw new Error("All fields are mandatory!");
+    const error = new Error("All fields are mandatory!");
+    error.statusCode = constants.VALIDATION_ERROR;
+    throw error;
   }
+
   const user = await User.findOne({ email });
+
   if (user && (await bcrypt.compare(password, user.password))) {
     const accessToken = jwt.sign(
       {
@@ -115,10 +113,10 @@ const loginUser = asyncHandler(async (req, res) => {
     );
     res.status(200).json({ accessToken, user });
   } else {
-    res.status(401);
-    throw new Error("password not valid");
+    const error = new Error("password not valid");
+    error.statusCode = constants.UNAUTHORIZED;
+    throw error;
   }
-  res.json({ message: "login user" });
 });
 
 //@desc delete a user
@@ -127,8 +125,9 @@ const loginUser = asyncHandler(async (req, res) => {
 const deleteUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) {
-    res.status(404);
-    throw new Error("User Not Found");
+    const error = new Error("User Not Found");
+    error.statusCode = constants.NOT_FOUND;
+    throw error;
   }
   await User.deleteOne({ _id: req.params.id });
   res.status(200).json({ message: "User removed" });
@@ -141,22 +140,22 @@ const updateUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
 
   if (!user) {
-    res.status(404);
-    throw new Error("User not found");
+    const error = new Error("User not found");
+    error.statusCode = constants.NOT_FOUND;
+    throw error;
   }
 
   const { firstName, lastName, phone, email, address } = req.body;
 
-  // Check if the email is already in use by another user
   if (
     email &&
     (await User.findOne({ email: email, _id: { $ne: req.params.id } }))
   ) {
-    res.status(400);
-    throw new Error("Email already in use");
+    const error = new Error("Email already in use");
+    error.statusCode = constants.VALIDATION_ERROR;
+    throw error;
   }
 
-  // Update user fields
   const updatedUser = await User.findByIdAndUpdate(
     req.params.id,
     {
@@ -169,12 +168,13 @@ const updateUser = asyncHandler(async (req, res) => {
     { new: true }
   );
 
-  if (updatedUser) {
-    res.status(200).json(updatedUser);
-  } else {
-    res.status(400);
-    throw new Error("Unable to update user");
+  if (!updatedUser) {
+    const error = new Error("Unable to update user");
+    error.statusCode = constants.SERVER_ERROR;
+    throw error;
   }
+
+  res.status(200).json(updatedUser);
 });
 
 const addCommentAndRating = asyncHandler(async (req, res) => {
@@ -183,21 +183,23 @@ const addCommentAndRating = asyncHandler(async (req, res) => {
   const clientId = req.user.id;
 
   if (!comment && !rating) {
-    res.status(400);
-    throw new Error("You must provide either a comment, a rating, or both.");
+    const error = new Error("You must provide either a comment, a rating, or both.");
+    error.statusCode = constants.VALIDATION_ERROR;
+    throw error;
   }
 
   const serviceProvider = await User.findById(serviceProviderId);
   if (!serviceProvider || serviceProvider.role !== "serviceProvider") {
-    res.status(404);
-    throw new Error("Service provider not found");
+    const error = new Error("Service provider not found");
+    error.statusCode = constants.NOT_FOUND;
+    throw error;
   }
 
-  // Fetch the client details
   const client = await User.findById(clientId);
   if (!client) {
-    res.status(404);
-    throw new Error("Client not found");
+    const error = new Error("Client not found");
+    error.statusCode = constants.NOT_FOUND;
+    throw error;
   }
 
   const newComment = {
@@ -230,73 +232,66 @@ const addCommentAndRating = asyncHandler(async (req, res) => {
 });
 
 const getCommentsAndRatings = asyncHandler(async (req, res) => {
-  try {
-    const { serviceProviderId } = req.params;
+  const { serviceProviderId } = req.params;
 
-    const serviceProvider = await User.findById(serviceProviderId).populate({
-      path: "comments.clientId",
-      select: "firstName lastName Photo", // Include Photo
-    });
+  const serviceProvider = await User.findById(serviceProviderId).populate({
+    path: "comments.clientId",
+    select: "firstName lastName Photo",
+  });
 
-    if (!serviceProvider || serviceProvider.role !== "serviceProvider") {
-      res.status(404);
-      throw new Error("Service provider not found");
-    }
-
-    res.status(200).json({
-      comments: serviceProvider.comments.map((comment) => ({
-        clientId: comment.clientId, // Return the full clientId object
-        comment: comment.comment || null,
-        rating: comment.rating || null,
-        createdAt: comment.createdAt,
-      })),
-      averageRating: serviceProvider.averageRating || 0,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  if (!serviceProvider || serviceProvider.role !== "serviceProvider") {
+    const error = new Error("Service provider not found");
+    error.statusCode = constants.NOT_FOUND;
+    throw error;
   }
+
+  res.status(200).json({
+    comments: serviceProvider.comments.map((comment) => ({
+      clientId: comment.clientId,
+      comment: comment.comment || null,
+      rating: comment.rating || null,
+      createdAt: comment.createdAt,
+    })),
+    averageRating: serviceProvider.averageRating || 0,
+  });
 });
 
 //@desc Get all service providers
 //@route GET /api/users/serviceProviders
 //@access public
 const getServiceProviders = asyncHandler(async (req, res) => {
-  try {
-    const serviceProviders = await User.find({
-      role: "serviceProvider",
-    }).populate({
-      path: "comments.clientId",
-      select: "firstName lastName Photo", // Include Photo
-    });
+  const serviceProviders = await User.find({
+    role: "serviceProvider",
+  }).populate({
+    path: "comments.clientId",
+    select: "firstName lastName Photo",
+  });
 
-    if (!serviceProviders || serviceProviders.length === 0) {
-      res.status(404);
-      throw new Error("No service providers found");
-    }
-
-    res.status(200).json(serviceProviders);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  if (!serviceProviders || serviceProviders.length === 0) {
+    const error = new Error("No service providers found");
+    error.statusCode = constants.NOT_FOUND;
+    throw error;
   }
+
+  res.status(200).json(serviceProviders);
 });
 
 //@desc Get top-rated service providers
 //@route GET /api/users/topRatedServiceProviders
 //@access public
 const getTopRatedServiceProviders = asyncHandler(async (req, res) => {
-  try {
-    const topRatedServiceProviders = await User.find({
-      role: "serviceProvider",
-    })
-      .sort({ averageRating: -1 })
-    if (!topRatedServiceProviders || topRatedServiceProviders.length === 0) {
-      res.status(404);
-      throw new Error("No top-rated service providers found");
-    }
-    res.status(200).json(topRatedServiceProviders);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  const topRatedServiceProviders = await User.find({
+    role: "serviceProvider",
+  })
+    .sort({ averageRating: -1 })
+
+  if (!topRatedServiceProviders || topRatedServiceProviders.length === 0) {
+      const error = new Error("No top-rated service providers found");
+      error.statusCode = constants.NOT_FOUND;
+      throw error;
   }
+
+  res.status(200).json(topRatedServiceProviders);
 });
 
 module.exports = {

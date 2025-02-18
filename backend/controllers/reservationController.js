@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const Reservation = require("../models/reservationModel");
 const User = require("../models/userModel");
+const { constants } = require("../constants");
 
 //@desc Get all reservations
 //@route GET /api/reservations
@@ -9,7 +10,7 @@ const getReservations = asyncHandler(async (req, res) => {
   const reservations = await Reservation.find()
     .populate({
       path: "ServiceProposal",
-      select: "service price", // Select only service and price from ServiceProposal
+      select: "service price",
       populate: {
         path: "service",
         select: "Name",
@@ -19,8 +20,8 @@ const getReservations = asyncHandler(async (req, res) => {
       path: "Client",
       select: "email firstName lastName city phone address Photo",
       populate: {
-        path: "city", // Populate the city field
-        select: "Name", // Select only the name field from the City model
+        path: "city",
+        select: "Name",
       },
     })
     .populate({
@@ -35,54 +36,41 @@ const getReservations = asyncHandler(async (req, res) => {
 //@route POST /api/reservations
 //@access Private
 const createReservation = asyncHandler(async (req, res) => {
-  try {
-    const { Date, Time, ServiceProposal, ServiceProvider, Client } = req.body;
+  const { Date, Time, ServiceProposal, ServiceProvider, Client } = req.body;
 
-    // Validate required fields
-    if (!Date || !Time || !ServiceProposal || !ServiceProvider || !Client) {
-      res.status(400);
-      throw new Error("All fields are mandatory");
-    }
-
-    // Check if the client is trying to book their own service
-    if (Client === ServiceProvider) {
-      res.status(400);
-      throw new Error("You cannot book your own service.");
-    }
-
-    const existingReservation = await Reservation.findOne({
-      ServiceProposal: ServiceProposal,
-      Time: Time,
-      Status: "confirmed",
-    });
-
-    console.log("Existing Reservation:", existingReservation);
-
-    if (existingReservation) {
-      res.status(400);
-      throw new Error("Time slot is already reserved for this service");
-    }
-
-    // Create a new reservation
-    const reservation = await Reservation.create({
-      Date,
-      Time,
-      ServiceProposal,
-      ServiceProvider,
-      Client,
-    });
-
-    // Send success response
-    res.status(201).json(reservation);
-  } catch (error) {
-    console.error("Error in createReservation:", error);
-
-    // Send error response
-    res.status(500).json({
-      message: "An error occurred while creating the reservation",
-      error: error.message,
-    });
+  if (!Date || !Time || !ServiceProposal || !ServiceProvider || !Client) {
+    const error = new Error("All fields are mandatory");
+    error.statusCode = constants.VALIDATION_ERROR;
+    throw error;
   }
+
+  if (Client === ServiceProvider) {
+    const error = new Error("You cannot book your own service.");
+    error.statusCode = constants.VALIDATION_ERROR;
+    throw error;
+  }
+
+  const existingReservation = await Reservation.findOne({
+    ServiceProposal: ServiceProposal,
+    Time: Time,
+    Status: "confirmed",
+  });
+
+  if (existingReservation) {
+    const error = new Error("Time slot is already reserved for this service");
+    error.statusCode = constants.VALIDATION_ERROR;
+    throw error;
+  }
+
+  const reservation = await Reservation.create({
+    Date,
+    Time,
+    ServiceProposal,
+    ServiceProvider,
+    Client,
+  });
+
+  res.status(201).json(reservation);
 });
 
 //@desc Delete a reservation
@@ -92,10 +80,10 @@ const deleteReservation = asyncHandler(async (req, res) => {
   const reservation = await Reservation.findById(req.params.id);
 
   if (!reservation) {
-    res.status(404);
-    throw new Error("Reservation not found");
+    const error = new Error("Reservation not found");
+    error.statusCode = constants.NOT_FOUND;
+    throw error;
   }
-
 
   await reservation.deleteOne({ _id: req.params.id });
 
@@ -106,45 +94,43 @@ const deleteReservation = asyncHandler(async (req, res) => {
 //@route GET /api/reservations/:serviceProviderId/availability
 //@access Private
 const getAvailabilityForServiceProvider = asyncHandler(async (req, res) => {
-  const { ServiceProvider } = req.params; // Use `ServiceProvider` instead of `serviceProviderId`
+  const { ServiceProvider } = req.params;
   const { date } = req.query;
-  console.log(ServiceProvider, "test");
-  try {
-    const serviceProvider = await User.findById(ServiceProvider);
-    if (!serviceProvider) {
-      return res.status(404).json({ message: "Service provider not found" });
-    }
 
-    let selectedDate = new Date(date);
-    selectedDate.setHours(0, 0, 0, 0);
-    let nextDay = new Date(selectedDate);
-    nextDay.setDate(nextDay.getDate() + 1);
-
-    const reservations = await Reservation.find({
-      ServiceProvider: ServiceProvider,
-      Date: { $gte: selectedDate, $lt: nextDay },
-      Status: "confirmed",
-    });
-
-    const openHour = 9;
-    const closeHour = 18;
-
-    let slots = [];
-    for (let hour = openHour; hour < closeHour; hour++) {
-      let timeSlot = `${hour < 10 ? "0" + hour : hour}:00`;
-      let isAvailable = !reservations.some(
-        (reservation) => reservation.Time === timeSlot
-      );
-      slots.push({ time: timeSlot, isAvailable });
-    }
-
-    res.json({ slots });
-  } catch (error) {
-    console.error("Error fetching availability:", error);
-    res
-      .status(500)
-      .json({ message: "An error occurred while fetching availability" });
+  const serviceProvider = await User.findById(ServiceProvider);
+  
+  if (!serviceProvider) {
+    const error = new Error("Service provider not found");
+    error.statusCode = constants.NOT_FOUND;
+    throw error;
   }
+
+  let selectedDate = new Date(date);
+  selectedDate.setHours(0, 0, 0, 0);
+  let nextDay = new Date(selectedDate);
+  nextDay.setDate(nextDay.getDate() + 1);
+
+  const reservations = await Reservation.find({
+    ServiceProvider: ServiceProvider,
+    Date: { $gte: selectedDate, $lt: nextDay },
+    Status: "confirmed",
+  });
+
+  const openHour = 9;
+  const closeHour = 18;
+
+  let slots = [];
+  
+  for (let hour = openHour; hour < closeHour; hour++) {
+    let timeSlot = `${hour < 10 ? "0" + hour : hour}:00`;
+    let isAvailable = !reservations.some(
+      (reservation) => reservation.Time === timeSlot
+    );
+    
+    slots.push({ time: timeSlot, isAvailable });
+  }
+
+  res.json({ slots });
 });
 
 //@desc Update reservation status
@@ -155,25 +141,27 @@ const updateReservationStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
 
   if (!["confirmed", "rejected"].includes(status)) {
-    res.status(400);
-    throw new Error(
-      "Invalid status. Status must be 'confirmed' or 'rejected'."
-    );
+    const error = new Error("Invalid status. Status must be 'confirmed' or 'rejected'.");
+    error.statusCode = constants.VALIDATION_ERROR;
+    throw error;
   }
 
   const reservation = await Reservation.findById(reservationId);
 
   if (!reservation) {
-    res.status(404);
-    throw new Error("Reservation not found");
+    const error = new Error("Reservation not found");
+    error.statusCode = constants.NOT_FOUND;
+    throw error;
   }
 
   if (reservation.ServiceProvider.toString() !== req.user.id) {
-    res.status(403);
-    throw new Error("You are not authorized to update this reservation status");
+    const error = new Error("You are not authorized to update this reservation status");
+    error.statusCode = constants.FORBIDDEN;
+    throw error;
   }
 
   reservation.Status = status;
+  
   await reservation.save();
 
   res.status(200).json({
@@ -212,50 +200,47 @@ const getClientReservations = asyncHandler(async (req, res) => {
         path: "city",
         select: "Name",
       },
-    })
-      
+    });
 
-  res.status(200).json(reservations);
+   res.status(200).json(reservations);
 });
 
 //@desc Get reservations for a service provider
 //@route GET /api/reservations/serviceProvider
 //@access Private
 const getServiceProviderReservations = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
+   const userId = req.user.id;
 
-  const reservations = await Reservation.find({
-    ServiceProvider: userId,
-  })
-    .populate({
-      path: "ServiceProposal",
-      select: "service price title",
-      populate: {
-        path: "service",
-        select: "Name",
-      },
-    })
-    .populate({
-      path: "Client",
-      select: "email firstName lastName city phone address Photo",
-      populate: {
-        path: "city",
-        select: "Name",
-      },
-    })
-    .populate("ServiceProvider", "firstName lastName email Photo");
+   const reservations = await Reservation.find({
+     ServiceProvider: userId,
+   })
+     .populate({
+       path: "ServiceProposal",
+       select: "service price title",
+       populate: {
+         path: "service",
+         select: "Name",
+       },
+     })
+     .populate({
+       path: "Client",
+       select: "email firstName lastName city phone address Photo",
+       populate: {
+         path: "city",
+         select: "Name",
+       },
+     })
+     .populate("ServiceProvider", "firstName lastName email Photo");
 
-  res.status(200).json(reservations);
+   res.status(200).json(reservations);
 });
 
-
-
 module.exports = {
-  getReservations,
-  createReservation,
-  deleteReservation,
-  getAvailabilityForServiceProvider,
-  updateReservationStatus,
-  getClientReservations,
-  getServiceProviderReservations,
+   getReservations,
+   createReservation,
+   deleteReservation,
+   getAvailabilityForServiceProvider,
+   updateReservationStatus,
+   getClientReservations,
+   getServiceProviderReservations,
 };

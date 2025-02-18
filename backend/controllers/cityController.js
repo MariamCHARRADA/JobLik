@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const City = require("../models/CityModel");
+const { constants } = require("../constants");
 
 //@desc Get all cities
 //@route GET /api/cities
@@ -9,7 +10,8 @@ const getCities = asyncHandler(async (req, res) => {
     const cities = await City.find();
     res.status(200).json(cities);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    error.statusCode = constants.SERVER_ERROR;
+    throw error; // asyncHandler forwards it to the error handler
   }
 });
 
@@ -20,15 +22,19 @@ const createCity = asyncHandler(async (req, res) => {
   try {
     const { Name } = req.body;
     if (!Name) {
-      res.status(400);
-      throw new Error("All fields are mandatory");
+      const error = new Error("All fields are mandatory");
+      error.statusCode = constants.VALIDATION_ERROR;
+      throw error;
     }
     const city = await City.create({
       Name,
     });
     res.status(201).json(city);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    if (!error.statusCode) {
+      error.statusCode = constants.SERVER_ERROR; // Default server error
+    }
+    throw error;
   }
 });
 
@@ -40,14 +46,18 @@ const updateCity = asyncHandler(async (req, res) => {
     const { Name } = req.body;
     const city = await City.findById(req.params.id);
     if (!city) {
-      res.status(404);
-      throw new Error("City not found");
+      const error = new Error("City not found");
+      error.statusCode = constants.NOT_FOUND;
+      throw error;
     }
     city.Name = Name || city.Name;
     const updatedCity = await city.save();
     res.status(200).json(updatedCity);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    if (!error.statusCode) {
+      error.statusCode = constants.SERVER_ERROR;
+    }
+    throw error;
   }
 });
 
@@ -58,15 +68,19 @@ const deleteCity = asyncHandler(async (req, res) => {
   try {
     const city = await City.findById(req.params.id);
     if (!city) {
-      res.status(404);
-      throw new Error("City not found");
+      const error = new Error("City not found");
+      error.statusCode = constants.NOT_FOUND;
+      throw error;
     }
     await city.deleteOne({
       _id: req.params.id,
     });
     res.status(200).json({ message: "City removed" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    if (!error.statusCode) {
+      error.statusCode = constants.SERVER_ERROR;
+    }
+    throw error;
   }
 });
 

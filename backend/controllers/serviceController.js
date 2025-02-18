@@ -1,44 +1,38 @@
 const asyncHandler = require("express-async-handler");
 const Service = require("../models/ServicesModel");
+const { constants } = require("../constants");
 
 //@desc Get all services
 //@route Get /api/getServices
 //@access private
 const getServices = asyncHandler(async (req, res) => {
-  try {
-    const services = await Service.find();
-    res.status(200).json(services);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  const services = await Service.find();
+  res.status(200).json(services);
 });
 
 //@desc create new service
 //@route POST /api/createService
 //@access private
 const createService = asyncHandler(async (req, res) => {
-  try {
-    const { Name } = req.body;
-    let imageUrl = null;
+  const { Name } = req.body;
+  let imageUrl = null;
 
-    if (!Name) {
-      res.status(400);
-      throw new Error("Service name is required");
-    }
-
-    if (req.file) {
-      imageUrl = req.file.path;
-    }
-
-    const service = await Service.create({
-      Name,
-      Photo: imageUrl,
-    });
-
-    res.status(201).json(service);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  if (!Name) {
+    const error = new Error("Service name is required");
+    error.statusCode = constants.VALIDATION_ERROR;
+    throw error;
   }
+
+  if (req.file) {
+    imageUrl = req.file.path;
+  }
+
+  const service = await Service.create({
+    Name,
+    Photo: imageUrl,
+  });
+
+  res.status(201).json(service);
 });
 
 //@desc update a service
@@ -47,8 +41,9 @@ const createService = asyncHandler(async (req, res) => {
 const updateService = asyncHandler(async (req, res) => {
   const service = await Service.findById(req.params.id);
   if (!service) {
-    res.status(404);
-    throw new Error("Service not found");
+    const error = new Error("Service not found");
+    error.statusCode = constants.NOT_FOUND;
+    throw error;
   }
 
   const { Name } = req.body;
@@ -76,8 +71,9 @@ const updateService = asyncHandler(async (req, res) => {
 const deleteService = asyncHandler(async (req, res) => {
   const service = await Service.findById(req.params.id);
   if (!service) {
-    res.status(404);
-    throw new Error("Service Not Found");
+    const error = new Error("Service Not Found");
+    error.statusCode = constants.NOT_FOUND;
+    throw error;
   }
   await Service.deleteOne({ _id: req.params.id });
   res.status(200).json({ message: "service removed" });
