@@ -7,11 +7,12 @@ const { constants } = require("../constants");
 //@access Public
 const getCities = asyncHandler(async (req, res) => {
   try {
+    // fetch all documents in the 'City' collection
     const cities = await City.find();
     res.status(200).json(cities);
   } catch (error) {
     error.statusCode = constants.SERVER_ERROR;
-    throw error; // asyncHandler forwards it to the error handler
+    throw error;
   }
 });
 
@@ -32,7 +33,7 @@ const createCity = asyncHandler(async (req, res) => {
     res.status(201).json(city);
   } catch (error) {
     if (!error.statusCode) {
-      error.statusCode = constants.SERVER_ERROR; // Default server error
+      error.statusCode = constants.SERVER_ERROR;
     }
     throw error;
   }
