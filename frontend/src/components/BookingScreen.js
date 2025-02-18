@@ -17,8 +17,8 @@ import { BaseUrl } from "../../config/config";
 import { Calendar } from "react-native-calendars";
 import moment from "moment";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import colors from "../../utils/colors"; // Your custom color palette
-import { Ionicons } from "@expo/vector-icons"; // For icons
+import colors from "../../utils/colors";
+import { Ionicons } from "@expo/vector-icons";
 
 const BookingScreen = ({ route, navigation }) => {
   const { serviceProposal, provider } = route.params;
@@ -91,7 +91,7 @@ const BookingScreen = ({ route, navigation }) => {
           params: { date: dateString },
         }
       );
-      console.log("Available Times:", response.data.slots); // Debugging
+      console.log("Available Times:", response.data.slots); // Debug
 
       const slots = response.data.slots;
       if (slots && slots.length > 0) {
@@ -141,7 +141,6 @@ const BookingScreen = ({ route, navigation }) => {
       );
       setAvailableTimes(updatedTimes);
 
-      // Show success message
       Alert.alert(
         "Reservation Pending 🕒",
         `Your reservation is on its way to ${provider.firstName}! ${provider.firstName} will confirm soon. Don’t worry, it’s worth the wait! 😊`,
@@ -199,7 +198,7 @@ const BookingScreen = ({ route, navigation }) => {
 
       // Update the comments state with the new comment
       const newCommentData = {
-        _id: response.data._id, // Ensure the backend returns the new comment ID
+        _id: response.data._id, 
         comment: comment,
         rating: rating,
         clientId: {
