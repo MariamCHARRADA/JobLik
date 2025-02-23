@@ -10,7 +10,7 @@ const app = express(); // create express app instance
 
 const port = process.env.PORT || 5000;
 
-app.use(express.json()); // Middleware to parse incoming requests + MUST be 1st
+app.use(express.json()); // Middleware to populate and store req body + MUST be 1st
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/categories", require("./routes/categoryRoutes")); 
 app.use("/api/services", require("./routes/ServiceRoutes"));
@@ -20,7 +20,7 @@ app.use("/api/proposal", require("./routes/ServiceProposalRoutes"));
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-app.use(errorHandler); // MUST be last
+app.use(errorHandler); // MUST be last (to handle the error when a user tries an api not mentioned above)
 
 // Starts the server
 app.listen(port, () => {
